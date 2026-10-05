@@ -1,0 +1,180 @@
+x-sonic-vs: &sonic-vs
+  image: ${SONIC_VS_IMAGE:-cscarpit/srv6-sonic-vs:0.0.7}
+  restart: unless-stopped
+  privileged: true
+  volumes:
+    # Mount the selected lab's router configs read-only in each container.
+    - ${LAB_DIR:?start with scripts/start-lab}/configs:/run/sonic-bgp-ls/configs:ro
+
+
+services:
+  R1:
+    <<: *sonic-vs
+    container_name: R1
+    hostname: R1
+    networks:
+      management:
+        ipv4_address: 192.168.250.11
+        interface_name: eth0
+      R1_R3:
+        interface_name: eth1
+      R1_R4:
+        interface_name: eth2
+      R1_R5:
+        interface_name: eth3
+      R1_RR:
+        interface_name: eth4
+
+  R2:
+    <<: *sonic-vs
+    container_name: R2
+    hostname: R2
+    networks:
+      management:
+        ipv4_address: 192.168.250.12
+        interface_name: eth0
+      R2_R3:
+        interface_name: eth1
+      R2_R4:
+        interface_name: eth2
+      R2_R5:
+        interface_name: eth3
+      R2_RR:
+        interface_name: eth4
+
+  R3:
+    <<: *sonic-vs
+    container_name: R3
+    hostname: R3
+    networks:
+      management:
+        ipv4_address: 192.168.250.13
+        interface_name: eth0
+      R1_R3:
+        interface_name: eth1
+      R2_R3:
+        interface_name: eth2
+      R3_RR:
+        interface_name: eth3
+
+  R4:
+    <<: *sonic-vs
+    container_name: R4
+    hostname: R4
+    networks:
+      management:
+        ipv4_address: 192.168.250.14
+        interface_name: eth0
+      R1_R4:
+        interface_name: eth1
+      R2_R4:
+        interface_name: eth2
+      R4_RR:
+        interface_name: eth3
+
+  R5:
+    <<: *sonic-vs
+    container_name: R5
+    hostname: R5
+    networks:
+      management:
+        ipv4_address: 192.168.250.15
+        interface_name: eth0
+      R1_R5:
+        interface_name: eth1
+      R2_R5:
+        interface_name: eth2
+      R5_RR:
+        interface_name: eth3
+
+  RR:
+    <<: *sonic-vs
+    container_name: RR
+    hostname: RR
+    networks:
+      management:
+        ipv4_address: 192.168.250.254
+        interface_name: eth0
+      R1_RR:
+        interface_name: eth1
+      R2_RR:
+        interface_name: eth2
+      R3_RR:
+        interface_name: eth3
+      R4_RR:
+        interface_name: eth4
+      R5_RR:
+        interface_name: eth5
+
+networks:
+  management:
+    ipam:
+      config:
+        - subnet: 192.168.250.0/24
+          gateway: 192.168.250.1
+  R1_R3:
+    enable_ipv4: false
+    enable_ipv6: true
+    internal: true
+    driver_opts:
+      com.docker.network.driver.mtu: "9100"
+  R1_R4:
+    enable_ipv4: false
+    enable_ipv6: true
+    internal: true
+    driver_opts:
+      com.docker.network.driver.mtu: "9100"
+  R1_R5:
+    enable_ipv4: false
+    enable_ipv6: true
+    internal: true
+    driver_opts:
+      com.docker.network.driver.mtu: "9100"
+  R2_R3:
+    enable_ipv4: false
+    enable_ipv6: true
+    internal: true
+    driver_opts:
+      com.docker.network.driver.mtu: "9100"
+  R2_R4:
+    enable_ipv4: false
+    enable_ipv6: true
+    internal: true
+    driver_opts:
+      com.docker.network.driver.mtu: "9100"
+  R2_R5:
+    enable_ipv4: false
+    enable_ipv6: true
+    internal: true
+    driver_opts:
+      com.docker.network.driver.mtu: "9100"
+  R1_RR:
+    enable_ipv4: false
+    enable_ipv6: true
+    internal: true
+    driver_opts:
+      com.docker.network.driver.mtu: "9100"
+  R2_RR:
+    enable_ipv4: false
+    enable_ipv6: true
+    internal: true
+    driver_opts:
+      com.docker.network.driver.mtu: "9100"
+  R3_RR:
+    enable_ipv4: false
+    enable_ipv6: true
+    internal: true
+    driver_opts:
+      com.docker.network.driver.mtu: "9100"
+  R4_RR:
+    enable_ipv4: false
+    enable_ipv6: true
+    internal: true
+    driver_opts:
+      com.docker.network.driver.mtu: "9100"
+  R5_RR:
+    enable_ipv4: false
+    enable_ipv6: true
+    internal: true
+    driver_opts:
+      com.docker.network.driver.mtu: "9100"

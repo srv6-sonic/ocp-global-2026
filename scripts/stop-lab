@@ -1,0 +1,17 @@
+#!/bin/sh
+set -eu
+
+if [ "$#" -ne 1 ]; then
+    echo "Usage: $0 bgp-ls-ebgp" >&2
+    exit 2
+fi
+
+root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+lab=$1
+case "$lab" in
+    bgp-ls-ebgp) ;;
+    *) echo "Unknown lab: $lab" >&2; exit 2 ;;
+esac
+
+exec docker compose --project-name "$lab" \
+    --file "$root/labs/$lab/compose.yml" down

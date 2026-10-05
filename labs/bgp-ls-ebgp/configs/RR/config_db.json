@@ -1,0 +1,34 @@
+{
+  "PORT": {
+    "Ethernet0": {
+      "admin_status": "up"
+    },
+    "Ethernet4": {
+      "admin_status": "up"
+    },
+    "Ethernet8": {
+      "admin_status": "up"
+    },
+    "Ethernet12": {
+      "admin_status": "up"
+    },
+    "Ethernet16": {
+      "admin_status": "up"
+    }
+  },
+  "INTERFACE": {
+    "Ethernet0": {},
+    "Ethernet0|2001:db8:1:ff::ff/64": {},
+    "Ethernet4": {},
+    "Ethernet4|2001:db8:2:ff::ff/64": {},
+    "Ethernet8": {},
+    "Ethernet8|2001:db8:3:ff::ff/64": {},
+    "Ethernet12": {},
+    "Ethernet12|2001:db8:4:ff::ff/64": {},
+    "Ethernet16": {},
+    "Ethernet16|2001:db8:5:ff::ff/64": {}
+  },
+  "LOOPBACK_INTERFACE": {
+    "Loopback0": {}
+  }
+}

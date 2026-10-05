@@ -1,0 +1,24 @@
+#!/bin/sh
+set -eu
+
+if [ "$#" -ne 2 ]; then
+    echo "Usage: $0 bgp-ls-ebgp {R1|R2|R3|R4|R5|RR}" >&2
+    exit 2
+fi
+
+root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+lab=$1
+node=$2
+
+case "$lab" in
+    bgp-ls-ebgp) ;;
+    *) echo "Unknown lab: $lab" >&2; exit 2 ;;
+esac
+
+case "$node" in
+    R1|R2|R3|R4|R5|RR) ;;
+    *) echo "Unknown node: $node" >&2; exit 2 ;;
+esac
+
+exec docker compose --project-name "$lab" \
+    --file "$root/labs/$lab/compose.yml" exec "$node" bash

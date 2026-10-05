@@ -1,0 +1,61 @@
+#!/bin/sh
+set -eu
+
+if [ "$#" -ne 1 ]; then
+    echo "Usage: $0 bgp-ls-ebgp" >&2
+    exit 2
+fi
+
+root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+lab=$1
+case "$lab" in
+    bgp-ls-ebgp) ;;
+    *) echo "Unknown lab: $lab" >&2; exit 2 ;;
+esac
+
+export LAB_DIR="$root/labs/$lab"
+compose() {
+    docker compose --project-name "$lab" \
+        --file "$root/labs/$lab/compose.yml" "$@"
+}
+
+wait_for_process() {
+    node=$1
+    process=$2
+    attempts=0
+    echo "[$node] Waiting for $process to start..."
+    while [ "$attempts" -lt 180 ]; do
+        if compose exec -T "$node" supervisorctl status "$process" 2>/dev/null |
+            grep -q RUNNING; then
+            echo "[$node] $process is running."
+            return 0
+        fi
+        attempts=$((attempts + 1))
+        if [ "$((attempts % 30))" -eq 0 ]; then
+            echo "[$node] Waiting for $process... (${attempts}s)"
+        fi
+        sleep 1
+    done
+    echo "Timed out waiting for $process in $node after 180 seconds." >&2
+    printf 'Inspect with: docker compose -p "%s" -f "%s" logs "%s"\n' \
+        "$lab" "$root/labs/$lab/compose.yml" "$node" >&2
+    return 1
+}
+
+echo "Starting Docker networks and SONiC-VS containers for $lab..."
+compose up --detach
+
+for node in R1 R2 R3 R4 R5 RR; do
+    echo "[$node] Waiting for SONiC routing services..."
+    wait_for_process "$node" zebra
+    wait_for_process "$node" bgpd
+    wait_for_process "$node" bgpcfgd
+    echo "[$node] Applying SONiC ConfigDB..."
+    compose exec -T "$node" sonic-cfggen \
+        -j "/run/sonic-bgp-ls/configs/$node/config_db.json" --write-to-db
+    echo "[$node] Loading FRR configuration..."
+    compose exec -T "$node" vtysh -f "/run/sonic-bgp-ls/configs/$node/frr.conf"
+    echo "[$node] Configuration complete."
+done
+
+echo "SONiC-VS containers are up and the $lab routing configuration is loaded."
